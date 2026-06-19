@@ -1,0 +1,22 @@
+---
+title: "Rpart"
+author: "Francisco Arthur, Kevin Pontes"
+date: "2026-06-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r cars}
+summary(cars)
+```
+
+
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
