@@ -5,18 +5,48 @@ date: "2026-06-19"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+**Análise Exploratória do Dataset**
+
+**Carregamento Dataset**
+
+```{r}
+data <- read.csv('diabetes.csv')
+head(data, 5)
+```
+**Estrutura do Dataset**
+
+
+```{r}
+str(data)
+```
+```{r}
+summary(data)
+```
+
+**Checagem de valores nulos e duplicados**
+
+
+```{r}
+sum(is.na(data))
+sum(duplicated(data))
+```
+**Analises adicionais e Aplicação do teste**
+```{r}
+table(data$Outcome)
+```
+
+
+```{r}
+mean(data$Outcome)
+```
+```{r}
+df_resultado <- aggregate(. ~ Outcome, data = data, FUN = mean, na.rm = TRUE)
+df_resultado
+```
+```{r}
+cor_matrix <- cor(data, use = "complete.obs", method = "pearson")
+cor_matrix
 ```
 
 
 
-```{r cars}
-summary(cars)
-```
-
-
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
