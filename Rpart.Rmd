@@ -10,6 +10,13 @@ output: html_document
 **Carregamento Dataset**
 
 ```{r}
+library(tidyverse)   # dplyr, ggplot2, tidyr, etc.
+library(ggplot2)
+library(patchwork)  
+```
+
+
+```{r}
 data <- read.csv('diabetes.csv')
 head(data, 5)
 ```
@@ -47,6 +54,150 @@ df_resultado
 cor_matrix <- cor(data, use = "complete.obs", method = "pearson")
 cor_matrix
 ```
+**Checando normalidade**
+```{r}
+num_cols <- data |>
+  select(where(is.numeric), -Outcome) |>
+  names()
+ 
+# Transformar para formato longo
+data_long <- data |>
+  mutate(Outcome = factor(Outcome, labels = c("Saudável (0)", "Diabético (1)"))) |>
+  pivot_longer(cols = all_of(num_cols), names_to = "Variavel", values_to = "Valor")
+ 
+# Plot: histograma + KDE por variável
+ggplot(data_long, aes(x = Valor, fill = Outcome, color = Outcome)) +
+  geom_histogram(
+    aes(y = after_stat(density)),
+    position = "identity",
+    alpha = 0.5,
+    bins = 30
+  ) +
+  geom_density(alpha = 0) +
+  facet_wrap(~Variavel, scales = "free", ncol = 3) +
+  labs(
+    title = "Distribuição das variáveis por Outcome",
+    x = NULL, y = "Densidade",
+    fill = "Outcome", color = "Outcome"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "bottom")
+```
+
+**boxplots**
+
+```{r}
+ggplot(data_long, aes(x = Outcome, y = Valor, fill = Outcome)) +
+  geom_boxplot(alpha = 0.7, outlier.alpha = 0.4) +
+  facet_wrap(~Variavel, scales = "free_y", ncol = 3) +
+  labs(
+    title = "Boxplots das variáveis por Outcome",
+    x = "Outcome", y = NULL
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "none")
+ 
+```
+**Teste de shapiro-wilk**
+
+```{r}
+resultados_shapiro <- expand.grid(
+  Variavel = num_cols,
+  Outcome  = sort(unique(data$Outcome)),
+  stringsAsFactors = FALSE
+) |>
+  rowwise() |>
+  mutate(
+    dados      = list(data[[Variavel]][data$Outcome == Outcome]),
+    N          = length(dados),
+    estatistic = shapiro.test(dados)$statistic,
+    p_valor    = shapiro.test(dados)$p.value,
+    `Normal (α=0.05)` = ifelse(p_valor > 0.05, "Sim", "Não")
+  ) |>
+  select(-dados) |>
+  ungroup()
+ 
+
+tabela_shapiro <- resultados_shapiro |>
+  pivot_wider(
+    id_cols     = Variavel,
+    names_from  = Outcome,
+    values_from = c(estatistic, p_valor, `Normal (α=0.05)`),
+    names_glue  = "{.value}_Out:{Outcome}"
+  )
+ 
+print(tabela_shapiro)
+```
 
 
+```{r}
+cliffs_delta <- function(x, y) {
+  x <- as.numeric(x)
+  y <- as.numeric(y)
+  mean(outer(x, y, function(a, b) sign(a - b)))
+}
+ 
+# Função: rótulo do Cliff's Delta
+cliffs_delta_label <- function(delta) {
+  sinal   <- ifelse(delta >= 0, "(+)", "(-)")
+  abs_d   <- abs(delta)
+  estrelas <- dplyr::case_when(
+    abs_d < 0.147 ~ "",
+    abs_d < 0.330 ~ "*",
+    abs_d < 0.474 ~ "**",
+    TRUE          ~ "***"
+  )
+  paste0(sinal, estrelas)
+}
+ 
+# Separar grupos
+data_0 <- data |> filter(Outcome == 0)
+data_1 <- data |> filter(Outcome == 1)
+ 
+resultados_wilcoxon <- map_dfr(num_cols, function(col) {
+ 
+  dados_0 <- data_0[[col]]
+  dados_1 <- data_1[[col]]
+ 
+  # Wilcoxon Rank-Sum 
+  teste <- wilcox.test(dados_0, dados_1, exact = FALSE)
+ 
+  # Estatística Z (aproximação normal)
+  n1 <- length(dados_0)
+  n2 <- length(dados_1)
+  W  <- teste$statistic                      
+  mu_W <- n1 * n2 / 2
+  sigma_W <- sqrt(n1 * n2 * (n1 + n2 + 1) / 12)
+  Z  <- (W - mu_W) / sigma_W
+ 
+  # Soma dos postos do grupo 0
+  todos <- c(dados_0, dados_1)
+  grupos <- c(rep("0", n1), rep("1", n2))
+  postos <- rank(todos, ties.method = "average")
+  W_postos <- sum(postos[grupos == "0"])
+ 
+  # Cliff's Delta
+  delta <- cliffs_delta(dados_0, dados_1)
+  cd_lbl <- cliffs_delta_label(delta)
+  pval  <- teste$p.value
+ 
+  tibble(
+    Variavel            = col,
+    `Mediana Saudáveis` = round(median(dados_0, na.rm = TRUE), 4),
+    `Mediana Doentes`   = round(median(dados_1, na.rm = TRUE), 4),
+    `δ`                 = cd_lbl,
+    W                   = round(W_postos, 4),
+    Z                   = round(Z, 4),
+    `p-valor`           = round(pval, 3),
+    `α=0.01`            = ifelse(pval < 0.01, "Rejeita H₀", "Não Rejeita H₀"),
+    `α=0.05`            = ifelse(pval < 0.05, "Rejeita H₀", "Não Rejeita H₀"),
+    `α=0.1`             = ifelse(pval < 0.1,  "Rejeita H₀", "Não Rejeita H₀")
+  )
+})
+ 
+# Definir Variavel como nome das linhas
+resultados_wilcoxon <- column_to_rownames(resultados_wilcoxon, var = "Variavel")
+ 
+print(resultados_wilcoxon)
+```
 
