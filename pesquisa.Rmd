@@ -2,7 +2,9 @@
 title: "Wilcoxon para Uma Amostra – Pima Indians Diabetes"
 author: "Francisco Arthur, Kevin Pontes"
 date: "2026-06-19"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, message=FALSE, warning=FALSE}
@@ -25,7 +27,7 @@ Para nossa pesquisa selecionamos apenas os pacientes saudáveis (Outcome = 0) e 
 ## Descrição das variáveis e valores de referência selecionados
 
 | Variável | Descrição | Valor de referência | Faixa normal | Justificativa | Referência |
-|---|---|---|---|---|---|
+|------------|------------|------------|------------|------------|------------|
 | **Glucose** | Concentração de glicose plasmática após teste oral de tolerância à glicose. | 100 mg/dL | 60-140 | Ponto médio da faixa normal pós-OGTT (ADA/OMS). | <https://www.ncbi.nlm.nih.gov/books/NBK532915/> |
 | **BloodPressure** | Pressão arterial diastólica. | 70 mmHg | 60–80 | Média da faixa diastólica normal em adultos. | <https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2776530> |
 | **SkinThickness** | Espessura da dobra cutânea do tríceps. | 22 mm | 16–28 | Ponto médio para adultos saudáveis. | <https://pmc.ncbi.nlm.nih.gov/articles/PMC9127233/> |
@@ -185,51 +187,72 @@ Usamos a função `wilcox.test` do R base. Infelizmente uma limitação da funç
 ```{r}
 # wilcox.test(
 #   x,
-#       Vetor de dados (a amostra observada).
+#       Vetor numérico de dados (a amostra observada).
 #
 #   y = NULL,
-#       Segundo vetor de dados, opcional. Se fornecido, realiza o teste de
-#       Wilcoxon de duas amostras. Se NULL (padrão), realiza o teste de uma amostra.
+#       Segundo vetor numérico de dados. Se fornecido, realiza o
+#       teste de Wilcoxon de duas amostras. Se NULL (padrão), realiza o teste de uma amostra ou pareado, dependendo do argumento paired.
 #
 #   alternative = c("two.sided", "less", "greater"),
-#       Define a hipótese alternativa:
-#       "two.sided" — a mediana difere do valor de referência (para mais ou para menos).
-#       "less"      — a mediana é menor que o valor de referência.
-#       "greater"   — a mediana é maior que o valor de referência.
 #
 #   mu = 0,
-#       Valor numérico que indica o valor verdadeiro do parâmetro de locação
-#       sob H₀ (i.e., o valor de referência para o teste de uma amostra).
+#       Valor numérico que especifica o parâmetro de locação sob H₀.
+#       No teste de uma amostra ou pareado, é o valor de referência da mediana.
+#       No teste de duas amostras, é a diferença de locação sob H₀
 #
 #   paired = FALSE,
-#       Lógico. Se TRUE, realiza o teste de Wilcoxon pareado (assinado).
-#       Se FALSE (padrão), realiza o teste de postos de Wilcoxon (não pareado).
+#       requer que x e y sejam
+#       fornecidos com o mesmo comprimento.
+#       Se FALSE e y for fornecido, realiza o teste de
+#       Wilcoxon de soma de postos (rank-sum test).
 #
 #   exact = NULL,
-#       Lógico. Se TRUE, calcula o p-valor exato usando a distribuição exata
-#       dos postos. Se FALSE, usa a aproximação normal. NULL (padrão) escolhe
-#       automaticamente: exato se n <= 50 e sem empates, caso contrário aproximação.
+#       Controla o cálculo do p-valor:
+#       TRUE  — calcula o p-valor exato com base na distribuição exata dos postos.
+#       FALSE — usa a aproximação pela distribuição normal.
+#       NULL  — (padrão) escolhe automaticamente: exato se n < 50 e sem empates;
+#               caso contrário, usa a aproximação normal.
 #
 #   correct = TRUE,
-#       Lógico. Se TRUE, aplica a correção de continuidade na aproximação normal.
-#       Só tem efeito quando exact = FALSE.
+#       Se TRUE, aplica a correção de continuidade na
+#       aproximação normal. Só tem efeito quando exact = FALSE.
 #
 #   conf.int = FALSE,
-#       Lógico. Se TRUE, retorna o intervalo de confiança e a estimativa pontual
-#       da diferença de locação.
+#       Se TRUE, calcula e retorna um intervalo de confiança para o
+#       parâmetro de locação (ou diferença de locação no caso de duas amostras),
+#       além da estimativa pontual (pseudomediana ou diferença de Hodges-Lehmann).
 #
-#   conf.level = 0.95
-#       Nível de confiança para o intervalo de confiança (padrão: 0.95).
+#   conf.level = 0.95,
+#       Nível de confiança para o intervalo de confiança. Só tem efeito quando
+#       conf.int = TRUE. Valor padrão: 0.95 (intervalo de 95%).
+#
+#   formula = NULL,
+#       Fórmula do tipo y ~ grupo, onde y é a variável resposta numérica e
+#       grupo é o fator com dois níveis. Alternativa à especificação direta
+#       de x e y.
+#
+#   data = NULL,
+#       Data frame onde as variáveis da fórmula serão buscadas.
+#       Só tem efeito quando formula é especificada.
+#
+#   subset = NULL,
+#       Vetor lógico ou numérico opcional para selecionar um subconjunto das
+#       observações quando formula é usada.
+#
+#   na.action = NULL
+#       Função que define como lidar com NAs. O padrão segue a opção global
+#       getOption("na.action"). Exemplo: na.omit remove os NAs silenciosamente.
 # )
 ```
 
 ### Escolha dos parâmetros
 
-1. x: Os dados observados de cada variável  
-2. mu: O respectivo valor de referência clínica universal  
-3. alternative: "two.sided", pois queremos detectar diferença para mais ou para menos  
-4. exact: FALSE, pois usamos a aproximação normal (nossa amostra é grande)  
-5. correct: TRUE (correção de continuidade aplicada)  
+1.  x: Os dados observados de cada variável\
+2.  mu: O respectivo valor de referência clínica\
+3.  alternative: "two.sided", pois queremos detectar diferença para mais ou para menos\
+4.  exact: FALSE, pois usamos a aproximação normal\
+5.  correct: TRUE correção de continuidade\
+
 
 Para as demais configurações mantemos os valores padrão, por se tratarem de configurações estruturais para se adequarem ao estilo de código implementado pelo cientista.
 
