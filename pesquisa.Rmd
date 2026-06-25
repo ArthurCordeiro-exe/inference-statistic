@@ -27,7 +27,7 @@ Para nossa pesquisa selecionamos apenas os pacientes saudáveis (Outcome = 0) e 
 ## Descrição das variáveis e valores de referência selecionados
 
 | Variável | Descrição | Valor de referência | Faixa normal | Justificativa | Referência |
-|----|----|----|----|----|----|
+|------------|------------|------------|------------|------------|------------|
 | **Glucose** | Concentração de glicose plasmática após teste oral de tolerância à glicose. | 100 mg/dL | 60-140 | Ponto médio da faixa normal pós-OGTT (ADA/OMS). | <https://www.ncbi.nlm.nih.gov/books/NBK532915/> |
 | **BloodPressure** | Pressão arterial diastólica. | 70 mmHg | 60–80 | Média da faixa diastólica normal em adultos. | <https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2776530> |
 | **SkinThickness** | Espessura da dobra cutânea do tríceps. | 22 mm | 16–28 | Ponto médio para adultos saudáveis. | <https://pmc.ncbi.nlm.nih.gov/articles/PMC9127233/> |
@@ -182,6 +182,8 @@ df <- df |> select(-BloodPressure)
 
 Usamos a função `wilcox.test` do R base. Infelizmente uma limitação da função é não retornar a estatística Z associada ao teste, e como queríamos expô-la, foi preciso criar uma função que realiza o teste de Wilcoxon manualmente, mas não em totalidade, apenas o suficiente para gerarmos a estatística Z. Também nos atentamos a manter essa nossa função (`z_stat`) alinhada com o funcionamento da função `wilcox.test` utilizada, para garantir o mesmo valor de Z calculado internamente pelo método.
 
+Ademais utilizamos o valor de Z para calcularmos também o R de rosenthal, que nos permite definir o tamanho de efeito da variação, se muito alto, alto, médio ou baixo. Na tabela apresentada o sinal de rosenthal (+) ou (-) é calculado a partir da diferença da mediana observada com o valor referencia, já que R não mostra o sentido da variação, apenas seu nível.
+
 ### Todas as configurações possíveis
 
 **`x`** — Vetor numérico de dados (a amostra observada).
@@ -215,8 +217,8 @@ Usamos a função `wilcox.test` do R base. Infelizmente uma limitação da funç
 1.  x: Os dados observados de cada variável\
 2.  mu: O respectivo valor de referência clínica\
 3.  alternative: "two.sided", pois queremos detectar diferença para mais ou para menos\
-4.  exact: FALSE, pois usamos a aproximação normal\
-5.  correct: TRUE correção de continuidade\
+4.  exact: FALSE, pois usamos a aproximação normal para um teste clássico\
+5.  correct: TRUE correção de continuidade, já que usa aproximação normal\
 
 Para as demais configurações mantemos os valores padrão, por se tratarem de configurações estruturais para se adequarem ao estilo de código implementado pelo cientista.
 
@@ -294,7 +296,7 @@ resultados_wilcoxon <- column_to_rownames(resultados_wilcoxon, var = "Variavel")
 print(resultados_wilcoxon)
 ```
 
-Rejeitamos as hipóteses nulas para todos os testes com graus médios/altos de magnitude para a diferença entre os valores do grupo e o valor esperado. Em todos os casos os pacientes de Pima superaram os valores mundialmente tidos como normais para os atributos estudados, para os 3 níveis de significância clássicos.
+Rejeitamos as hipóteses nulas para todos os testes com graus médios/altos de magnitude para a diferença entre os valores do grupo e o valor esperado. Em todos os casos os pacientes de Pima superaram os valores mundialmente tidos como normais para os atributos estudados, para os 3 níveis de significância clássicos, revelando como a população, mesmo saudável, é muito distoante do padrão mundial de saúde.
 
 ## Comparação com teste T
 
