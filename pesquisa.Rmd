@@ -27,7 +27,7 @@ Para nossa pesquisa selecionamos apenas os pacientes saudáveis (Outcome = 0) e 
 ## Descrição das variáveis e valores de referência selecionados
 
 | Variável | Descrição | Valor de referência | Faixa normal | Justificativa | Referência |
-|------------|------------|------------|------------|------------|------------|
+|----|----|----|----|----|----|
 | **Glucose** | Concentração de glicose plasmática após teste oral de tolerância à glicose. | 100 mg/dL | 60-140 | Ponto médio da faixa normal pós-OGTT (ADA/OMS). | <https://www.ncbi.nlm.nih.gov/books/NBK532915/> |
 | **BloodPressure** | Pressão arterial diastólica. | 70 mmHg | 60–80 | Média da faixa diastólica normal em adultos. | <https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2776530> |
 | **SkinThickness** | Espessura da dobra cutânea do tríceps. | 22 mm | 16–28 | Ponto médio para adultos saudáveis. | <https://pmc.ncbi.nlm.nih.gov/articles/PMC9127233/> |
@@ -36,11 +36,11 @@ Para nossa pesquisa selecionamos apenas os pacientes saudáveis (Outcome = 0) e 
 
 ```{r}
 valores_referencia <- c(
-  Glucose       = 100,
+  Glucose = 100,
   BloodPressure = 70,
   SkinThickness = 22,
-  Insulin       = 40,
-  BMI           = 21.7
+  Insulin = 40,
+  BMI = 21.7
 )
 ```
 
@@ -184,66 +184,31 @@ Usamos a função `wilcox.test` do R base. Infelizmente uma limitação da funç
 
 ### Todas as configurações possíveis
 
-```{r}
-# wilcox.test(
-#   x,
-#       Vetor numérico de dados (a amostra observada).
-#
-#   y = NULL,
-#       Segundo vetor numérico de dados. Se fornecido, realiza o
-#       teste de Wilcoxon de duas amostras. Se NULL (padrão), realiza o teste de uma amostra ou pareado, dependendo do argumento paired.
-#
-#   alternative = c("two.sided", "less", "greater"),
-#
-#   mu = 0,
-#       Valor numérico que especifica o parâmetro de locação sob H₀.
-#       No teste de uma amostra ou pareado, é o valor de referência da mediana.
-#       No teste de duas amostras, é a diferença de locação sob H₀
-#
-#   paired = FALSE,
-#       requer que x e y sejam
-#       fornecidos com o mesmo comprimento.
-#       Se FALSE e y for fornecido, realiza o teste de
-#       Wilcoxon de soma de postos (rank-sum test).
-#
-#   exact = NULL,
-#       Controla o cálculo do p-valor:
-#       TRUE  — calcula o p-valor exato com base na distribuição exata dos postos.
-#       FALSE — usa a aproximação pela distribuição normal.
-#       NULL  — (padrão) escolhe automaticamente: exato se n < 50 e sem empates;
-#               caso contrário, usa a aproximação normal.
-#
-#   correct = TRUE,
-#       Se TRUE, aplica a correção de continuidade na
-#       aproximação normal. Só tem efeito quando exact = FALSE.
-#
-#   conf.int = FALSE,
-#       Se TRUE, calcula e retorna um intervalo de confiança para o
-#       parâmetro de locação (ou diferença de locação no caso de duas amostras),
-#       além da estimativa pontual (pseudomediana ou diferença de Hodges-Lehmann).
-#
-#   conf.level = 0.95,
-#       Nível de confiança para o intervalo de confiança. Só tem efeito quando
-#       conf.int = TRUE. Valor padrão: 0.95 (intervalo de 95%).
-#
-#   formula = NULL,
-#       Fórmula do tipo y ~ grupo, onde y é a variável resposta numérica e
-#       grupo é o fator com dois níveis. Alternativa à especificação direta
-#       de x e y.
-#
-#   data = NULL,
-#       Data frame onde as variáveis da fórmula serão buscadas.
-#       Só tem efeito quando formula é especificada.
-#
-#   subset = NULL,
-#       Vetor lógico ou numérico opcional para selecionar um subconjunto das
-#       observações quando formula é usada.
-#
-#   na.action = NULL
-#       Função que define como lidar com NAs. O padrão segue a opção global
-#       getOption("na.action"). Exemplo: na.omit remove os NAs silenciosamente.
-# )
-```
+**`x`** — Vetor numérico de dados (a amostra observada).
+
+**`y = NULL`** — Segundo vetor numérico de dados, opcional. Se fornecido, realiza o teste de Wilcoxon de duas amostras (Mann-Whitney U). Se `NULL`, realiza o teste de uma amostra ou pareado, dependendo de `paired`.
+
+**`alternative = "two.sided"`** — Hipótese alternativa: `"two.sided"` detecta diferença em qualquer direção; `"less"` testa se a locação é menor que `mu`; `"greater"` se é maior.
+
+**`mu = 0`** — Parâmetro de locação sob H₀. No teste de uma amostra ou pareado é o valor de referência; no de duas amostras é a diferença de locação esperada.
+
+**`paired = FALSE`** — Se `TRUE`, realiza o teste de postos com sinal para amostras pareadas — requer `x` e `y` com o mesmo comprimento. Se `FALSE`, realiza o teste de soma de postos (Mann-Whitney U) quando `y` é fornecido.
+
+**`exact = NULL`** — Controla o cálculo do p-valor: `TRUE` usa a distribuição exata dos postos; `FALSE` usa a aproximação normal; `NULL` escolhe automaticamente — exato se n \< 50 e sem empates, aproximação caso contrário.
+
+**`correct = TRUE`** — Aplica correção de continuidade na aproximação normal. Só tem efeito quando `exact = FALSE`.
+
+**`conf.int = FALSE`** — Se `TRUE`, retorna intervalo de confiança e estimativa pontual da locação (pseudomediana para uma amostra; diferença de Hodges-Lehmann para duas amostras).
+
+**`conf.level = 0.95`** — Nível de confiança para o intervalo retornado por `conf.int`. Padrão: 0,95.
+
+**`formula = NULL`** — Interface de fórmula do tipo `y ~ grupo`, onde `grupo` é um fator com dois níveis. Alternativa à especificação direta de `x` e `y`.
+
+**`data = NULL`** — Data frame onde as variáveis da fórmula serão buscadas. Só tem efeito com `formula`.
+
+**`subset = NULL`** — Vetor lógico ou numérico para selecionar um subconjunto de observações quando `formula` é usada.
+
+**`na.action = NULL`** — Função que define o tratamento de `NA`s. O padrão segue `getOption("na.action")`; por exemplo, `na.omit` remove as observações ausentes silenciosamente.
 
 ### Escolha dos parâmetros
 
@@ -252,7 +217,6 @@ Usamos a função `wilcox.test` do R base. Infelizmente uma limitação da funç
 3.  alternative: "two.sided", pois queremos detectar diferença para mais ou para menos\
 4.  exact: FALSE, pois usamos a aproximação normal\
 5.  correct: TRUE correção de continuidade\
-
 
 Para as demais configurações mantemos os valores padrão, por se tratarem de configurações estruturais para se adequarem ao estilo de código implementado pelo cientista.
 
@@ -267,7 +231,7 @@ rosenthal_label <- function(r) {
     abs_r < 0.10 ~ "",
     abs_r < 0.30 ~ "*",
     abs_r < 0.50 ~ "**",
-    TRUE         ~ "***"
+    TRUE ~ "***"
   )
   sinal <- ifelse(r >= 0, "+", "-")
   paste0("(", sinal, ")", stars)
@@ -280,12 +244,12 @@ z_stat <- function(diferencas) {
   if (n == 0) return(list(z = NA_real_, n = n))
 
   abs_ranks <- rank(abs(diferencas_nao_zero))
-  T_pos     <- sum(abs_ranks[diferencas_nao_zero > 0])
+  T_pos <- sum(abs_ranks[diferencas_nao_zero > 0])
 
   media_w <- n * (n + 1) / 4
-  sd_w    <- sqrt(n * (n + 1) * (2 * n + 1) / 24)
+  sd_w <- sqrt(n * (n + 1) * (2 * n + 1) / 24)
 
-  z <- (T_pos - media_w) / sd_w
+  z <- ((T_pos - media_w) - 0.5) / sd_w
 
   list(z = z, n = n)
 }
@@ -293,35 +257,35 @@ z_stat <- function(diferencas) {
 num_cols <- intersect(names(valores_referencia), names(df))
 
 resultados_wilcoxon <- map_dfr(num_cols, function(col) {
-  dados      <- df[[col]]
+  dados <- df[[col]]
   referencia <- valores_referencia[col]
   diferencas <- dados - referencia
 
   teste <- wilcox.test(
     dados,
-    mu          = referencia,
+    mu = referencia,
     alternative = "two.sided",
-    exact       = FALSE,
-    correct     = TRUE
+    exact = FALSE,
+    correct = TRUE
   )
 
   zn <- z_stat(diferencas)
-  z  <- zn$z
-  n  <- zn$n
-  r  <- rosenthal_r(z, n)
+  z <- zn$z
+  n <- zn$n
+  r <- rosenthal_r(z, n)
 
   tibble(
-    Variavel            = col,
+    Variavel = col,
     `Mediana Observada` = round(median(dados, na.rm = TRUE), 4),
-    `Valor Esperado`    = referencia,
-    n                   = n,
-    W                   = round(teste$statistic, 4),
-    Z                   = round(z, 4),
-    r                   = rosenthal_label(r),
-    `p-valor`           = round(teste$p.value, 6),
-    `α=0.01`            = ifelse(teste$p.value < 0.01, "Rejeita H₀", "Não Rejeita H₀"),
-    `α=0.05`            = ifelse(teste$p.value < 0.05, "Rejeita H₀", "Não Rejeita H₀"),
-    `α=0.10`            = ifelse(teste$p.value < 0.10, "Rejeita H₀", "Não Rejeita H₀")
+    `Valor Esperado` = referencia,
+    n = n,
+    W = round(teste$statistic, 4),
+    Z = round(z, 4),
+    r = rosenthal_label(r),
+    `p-valor` = round(teste$p.value, 6),
+    `α=0.01` = ifelse(teste$p.value < 0.01, "Rejeita H₀", "Não Rejeita H₀"),
+    `α=0.05` = ifelse(teste$p.value < 0.05, "Rejeita H₀", "Não Rejeita H₀"),
+    `α=0.10` = ifelse(teste$p.value < 0.10, "Rejeita H₀", "Não Rejeita H₀")
   )
 })
 
@@ -336,27 +300,27 @@ Rejeitamos as hipóteses nulas para todos os testes com graus médios/altos de m
 
 ```{r}
 resultados_ttest <- map_dfr(num_cols, function(col) {
-  dados      <- na.omit(df[[col]])
+  dados <- na.omit(df[[col]])
   referencia <- valores_referencia[col]
 
   teste <- t.test(
     dados,
-    mu          = referencia,
+    mu = referencia,
     alternative = "two.sided"
   )
 
   n <- length(dados)
 
   tibble(
-    Variavel          = col,
+    Variavel = col,
     `Média Observada` = round(mean(dados), 4),
-    `Valor Esperado`  = referencia,
-    t                 = round(teste$statistic, 4),
-    gl                = n - 1,
-    `p-valor`         = round(teste$p.value, 6),
-    `α=0.01`          = ifelse(teste$p.value < 0.01, "Rejeita H₀", "Não Rejeita H₀"),
-    `α=0.05`          = ifelse(teste$p.value < 0.05, "Rejeita H₀", "Não Rejeita H₀"),
-    `α=0.10`          = ifelse(teste$p.value < 0.10, "Rejeita H₀", "Não Rejeita H₀")
+    `Valor Esperado` = referencia,
+    t = round(teste$statistic, 4),
+    gl = n - 1,
+    `p-valor` = round(teste$p.value, 6),
+    `α=0.01` = ifelse(teste$p.value < 0.01, "Rejeita H₀", "Não Rejeita H₀"),
+    `α=0.05` = ifelse(teste$p.value < 0.05, "Rejeita H₀", "Não Rejeita H₀"),
+    `α=0.10` = ifelse(teste$p.value < 0.10, "Rejeita H₀", "Não Rejeita H₀")
   )
 })
 
