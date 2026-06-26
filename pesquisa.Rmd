@@ -27,11 +27,11 @@ Para nossa pesquisa selecionamos apenas os pacientes saudáveis (Outcome = 0) e 
 ## Descrição das variáveis e valores de referência selecionados
 
 | Variável | Descrição | Valor de referência | Faixa normal | Justificativa | Referência |
-|------------|------------|------------|------------|------------|------------|
+|----|----|----|----|----|----|
 | **Glucose** | Concentração de glicose plasmática após teste oral de tolerância à glicose. | 100 mg/dL | 60-140 | Ponto médio da faixa normal pós-OGTT (ADA/OMS). | <https://www.ncbi.nlm.nih.gov/books/NBK532915/> |
 | **BloodPressure** | Pressão arterial diastólica. | 70 mmHg | 60–80 | Média da faixa diastólica normal em adultos. | <https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2776530> |
 | **SkinThickness** | Espessura da dobra cutânea do tríceps. | 22 mm | 16–28 | Ponto médio para adultos saudáveis. | <https://pmc.ncbi.nlm.nih.gov/articles/PMC9127233/> |
-| **Insulin** | Nível de insulina sérica em 2 horas. | 40 µU/mL | 16–166 | Média de insulina 2h (41,6 ± 30,8). | <https://pmc.ncbi.nlm.nih.gov/articles/PMC5831567/> |
+| **Insulin** | Nível de insulina sérica em 2 horas. | 91 µU/mL | 16–166 | Média de insulina 2h (41,6 ± 30,8). | <https://pmc.ncbi.nlm.nih.gov/articles/PMC5831567/> |
 | **BMI** | Índice de Massa Corporal (IMC). | 21,7 kg/m² | 18,5–24,9 | Média exata da faixa OMS de peso normal. | <https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight> |
 
 ```{r}
@@ -39,7 +39,7 @@ valores_referencia <- c(
   Glucose = 100,
   BloodPressure = 70,
   SkinThickness = 22,
-  Insulin = 40,
+  Insulin = 91,
   BMI = 21.7
 )
 ```
